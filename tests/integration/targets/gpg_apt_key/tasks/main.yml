@@ -1,0 +1,32 @@
+####################################################################
+# WARNING: These are designed specifically for Ansible tests       #
+# and should not be used as examples of how to write Ansible roles #
+####################################################################
+
+# Copyright: (c) 2025, Tom Andrivet (CanardConfit) <canardconfit.development@gmail.com>
+# Mozilla Public License 2.0 (see https://www.mozilla.org/MPL/2.0/)
+- name: Run tests on module gpg_apt_key
+  block:
+    - name: Test default # TODO: Make Tests works
+      canardconfit.ansible_utils.gpg_apt_key:
+        repo_name: "hashicorp"
+        repo_url: "https://apt.releases.hashicorp.com"
+        gpg_key_url: "https://apt.releases.hashicorp.com/gpg"
+        distribution: "bookworm"
+        components: "main"
+        architectures: "arm64"
+
+    - name: Test second time for check changes
+      canardconfit.ansible_utils.gpg_apt_key:
+        repo_name: "hashicorp"
+        repo_url: "https://apt.releases.hashicorp.com"
+        gpg_key_url: "https://apt.releases.hashicorp.com/gpg"
+        distribution: "bookworm"
+        components: "main"
+        architectures: "arm64"
+      register: test
+
+    - name: Assert change is false
+      ansible.builtin.assert:
+        that:
+          - test is not changed
