@@ -4,21 +4,14 @@
 		"dockerfile": "Dockerfile"
 	},
 	"containerUser": "root",
-	// "features": {
-	// 	"ghcr.io/davzucky/devcontainers-features-wolfi/docker-outside-of-docker:1": {
-	// 		"installDocker": true,
-	// 		"installBuildx": true,
-	// 		"installDockerCompose": true
-	// 	}
-	// },
 	"updateRemoteUserUID": true,
 	"runArgs": [
 		"--privileged",
-		"--device",
-		"/dev/fuse",
-		"--hostname=ansible-dev-container",
-		"--network", "host"
-	],
+    	"-v", "/var/run/docker.sock:/var/run/docker.sock"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -30,4 +23,4 @@
 	"postCreateCommand": "",
 	"workspaceFolder": "/ansible_collections/canardconfit/ansible_utils",
 	"workspaceMount": "source=${localWorkspaceFolder},target=/ansible_collections/canardconfit/ansible_utils,type=bind"
-}  
+}
