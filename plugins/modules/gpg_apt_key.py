@@ -235,6 +235,7 @@ import pwd
 import grp
 import hashlib
 
+
 def download_file(module, url, dest_path):
     """Downloads a file using Ansible's fetch_url() utility"""
     response, info = fetch_url(module, url, timeout=10)
@@ -244,6 +245,7 @@ def download_file(module, url, dest_path):
     
     with open(dest_path, "wb") as f:
         f.write(response.read())
+
 
 def is_ascii_gpg(file_path):
     """Checks if the downloaded GPG key is ASCII-armored (.asc)"""
@@ -255,18 +257,35 @@ def is_ascii_gpg(file_path):
     except Exception:
         return False
 
-def is_binary_gpg(file_path):
+
+def is_binary_gpg(file_path: str) -> bool:
     """Checks if the downloaded file is a valid binary GPG key"""
     try:
         with open(file_path, "rb") as f:
-            chunk = f.read(100)
-            return b"GnuPG" in chunk
+            head = f.read(6)
+
+        if not head:
+            return False
+
+        first = head[0]
+
+        if (first & 0x80) == 0:
+            return False
+
+        if (first & 0x40):
+            tag = first & 0x3F
+        else:
+            tag = (first >> 2) & 0x0F
+
+        return tag in (5, 6, 7, 14)
     except Exception:
         return False
+
 
 def get_architecture(ansible_arch):
     """Returns 'amd64' or 'arm64' based on ansible_architecture"""
     return {"x86_64": "amd64", "aarch64": "arm64"}.get(ansible_arch, ansible_arch)
+
 
 def file_hash(file_path):
     """Calculates SHA256 hash of a file"""
@@ -278,10 +297,12 @@ def file_hash(file_path):
     except FileNotFoundError:
         return None
 
+
 def run_command(module, command):
     """Executes a shell command and returns its output"""
     rc, stdout, stderr = module.run_command(command, check_rc=True)
     return stdout.strip()
+
 
 def main():
     module_args = dict(
@@ -399,6 +420,7 @@ Signed-By: {keyring_file}
         run_command(module, "apt update")
 
     module.exit_json(changed=changes, msg="GPG key and repository configured successfully", keyring_file=keyring_file, sources_file=sources_file)
+
 
 if __name__ == '__main__':
     main()
